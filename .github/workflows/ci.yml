@@ -1,4 +1,4 @@
-name: Run Ai Assistant Tests
+name: Ai Assistant CI
 
 on:
   push:
@@ -13,14 +13,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: pnpm
-
       - name: PNPM Install
-        uses: pnpm/action-setup@v3
+        run: npm install -g pnpm && pnpm install
 
       - name: Copy .env.example files
         shell: bash
