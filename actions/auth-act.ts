@@ -8,9 +8,16 @@ import * as z from "zod";
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 
-export async function newUser(data: unknown) {
+export async function newUser(prevState: unknown, formData: FormData) {
   // sanitize
-  const parsed = registerSchema.safeParse(data);
+  const raw = {
+    name: formData.get("name"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  };
+  // console.log("raw", raw);
+  const parsed = registerSchema.safeParse(raw);
   if (!parsed.success) {
     return {
       success: false,
@@ -66,10 +73,16 @@ export async function newUser(data: unknown) {
 }
 
 // custom sign in
-export async function logUser(data: unknown) {
+export async function logUser(prevState: unknown, formData: FormData) {
   try {
+    const raw = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      password: formData.get("password"),
+      confirmPassword: formData.get("confirmPassword"),
+    };
     // sanitize
-    const parsed = loginSchema.safeParse(data);
+    const parsed = loginSchema.safeParse(raw);
     if (!parsed.success) {
       return {
         success: false,
@@ -91,7 +104,7 @@ export async function logUser(data: unknown) {
         errors: res?.error,
       };
     }
-    console.log("log-res", res);
+    // console.log("log-res", res);
     // update the last login timestamp
     await db.update(usersTable).set({
       lastLogin: new Date().toLocaleDateString(),
@@ -102,7 +115,7 @@ export async function logUser(data: unknown) {
     };
   } catch (error) {
     if (error instanceof AuthError) {
-      console.log("auth-error", error);
+      // console.log("auth-error", error);
       return {
         success: false,
         message: "Authentication failed",

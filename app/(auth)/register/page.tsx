@@ -4,15 +4,26 @@ import { newUser } from "@/actions/auth-act";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Loader2Icon } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 
 export default function RegisterPage() {
   const [toggleEye, setToggleEye] = useState({
     pass: false,
     cPass: false,
   });
+
+  const [state, formAction, isPending] = useActionState(newUser, null);
+
+  useEffect(() => {
+    if (!state) return;
+    if (!state?.success) {
+      alert(state?.errors ? state.errors : state?.message ?? "Failed");
+      return;
+    }
+    alert(state.message);
+  }, [state]);
 
   return (
     <div className="min-h-screen flex flex-col justify-center">
@@ -23,36 +34,31 @@ export default function RegisterPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form
-            action={async (formData: FormData) => {
-              const raw = {
-                name: formData.get("name"),
-                email: formData.get("email"),
-                password: formData.get("password"),
-                confirmPassword: formData.get("confirmPassword"),
-              };
-              console.log("r", raw);
-              const res = await newUser(raw);
-              if (!res.success) {
-                alert(res.errors ? res.errors : res.message ?? "Failed");
-                return;
-              }
-              alert(res.message);
-            }}
-            className="space-y-4"
-          >
-            <Input name="name" type="text" placeholder="Enter name" />
-            <Input name="email" type="email" placeholder="Enter email" />
+          <form action={formAction} className="space-y-4">
+            <Input
+              disabled={isPending}
+              name="name"
+              type="text"
+              placeholder="Enter name"
+            />
+            <Input
+              disabled={isPending}
+              name="email"
+              type="email"
+              placeholder="Enter email"
+            />
             <div className="relative">
               <Input
                 name="password"
                 type={toggleEye.pass ? "text" : "password"}
                 placeholder="Enter password"
+                disabled={isPending}
               />
               <Button
                 className="absolute right-0 top-0"
                 type="button"
                 variant={"ghost"}
+                disabled={isPending}
                 onClick={() => {
                   setToggleEye((prev) => ({
                     ...prev,
@@ -60,7 +66,7 @@ export default function RegisterPage() {
                   }));
                 }}
               >
-                {toggleEye.pass ? <EyeOffIcon /> : <EyeIcon />}
+                {toggleEye.pass ? <EyeIcon /> : <EyeOffIcon />}
               </Button>
             </div>
             {/* confirm password */}
@@ -71,6 +77,7 @@ export default function RegisterPage() {
                 placeholder="Confirm password"
               />
               <Button
+                disabled={isPending}
                 className="absolute right-0 top-0"
                 type="button"
                 variant={"ghost"}
@@ -81,12 +88,16 @@ export default function RegisterPage() {
                   }));
                 }}
               >
-                {toggleEye.cPass ? <EyeOffIcon /> : <EyeIcon />}
+                {toggleEye.cPass ? <EyeIcon /> : <EyeOffIcon />}
               </Button>
             </div>
             <div className="flex items-center justify-between">
-              <Button type="submit" size={"lg"}>
-                Submit
+              <Button disabled={isPending} type="submit" size={"lg"}>
+                {isPending ? (
+                  <Loader2Icon className="animate-spin" />
+                ) : (
+                  "Submit"
+                )}
               </Button>
               <p>
                 Already an user ?{" "}

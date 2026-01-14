@@ -4,14 +4,26 @@ import { logUser } from "@/actions/auth-act";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Loader2Icon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [state, formAction, isPending] = useActionState(logUser, null);
+
   const [toggleEye, setToggleEye] = useState(false);
+
+  useEffect(() => {
+    if (!state) return;
+    if (!state?.success) {
+      alert(state?.errors ? state.errors : state?.message ?? "Failed");
+      return;
+    }
+    alert(state.message);
+    router.push("/research");
+  }, [state, router]);
 
   return (
     <div className="min-h-screen flex flex-col justify-center">
@@ -22,31 +34,22 @@ export default function LoginPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form
-            action={async (formData: FormData) => {
-              const raw = {
-                email: formData.get("email"),
-                password: formData.get("password"),
-              };
-              const res = await logUser(raw);
-              console.log("cli-res", res);
-              if (!res.success) {
-                alert(res?.errors ? res.errors : res.message ?? "Failed");
-                return;
-              }
-              alert("Logged In");
-              router.push("/research");
-            }}
-            className="space-y-4"
-          >
-            <Input name="email" type="email" placeholder="Enter email" />
+          <form action={formAction} className="space-y-4">
+            <Input
+              disabled={isPending}
+              name="email"
+              type="email"
+              placeholder="Enter email"
+            />
             <div className="relative">
               <Input
+                disabled={isPending}
                 name="password"
                 type={toggleEye ? "text" : "password"}
                 placeholder="Enter password"
               />
               <Button
+                disabled={isPending}
                 className="absolute right-0 top-0"
                 type="button"
                 variant={"ghost"}
@@ -59,8 +62,8 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between">
-              <Button type="submit" size={"lg"}>
-                Login
+              <Button disabled={isPending} type="submit" size={"lg"}>
+                {isPending ? <Loader2Icon className="animate-spin" /> : "Login"}
               </Button>
               <p>
                 Not an user ?{" "}
