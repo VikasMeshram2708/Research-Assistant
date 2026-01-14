@@ -1,4 +1,14 @@
-import { MenuIcon, ScanSearch } from "lucide-react";
+"use client";
+
+import {
+  LayoutDashboardIcon,
+  Loader2Icon,
+  LogOutIcon,
+  MenuIcon,
+  ScanSearch,
+  SettingsIcon,
+  SquareUserIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import {
@@ -9,8 +19,19 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
+import { signOut, useSession } from "next-auth/react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export default function Header() {
+  const { status, data } = useSession();
   const navLinks = [
     {
       label: "Home",
@@ -71,16 +92,105 @@ export default function Header() {
                 ))}
               </nav>
               <SheetFooter className="grid gap-3">
-                <Button variant={"link"}>Login</Button>
-                <Button>Register</Button>
+                {status === "loading" ? (
+                  <Loader2Icon className="animate-spin" />
+                ) : status === "unauthenticated" ? (
+                  <>
+                    <Button variant={"link"}>Login</Button>
+                    <Button>Register</Button>
+                  </>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button type="button" variant={"ghost"}>
+                        <Avatar>
+                          <AvatarImage
+                            src={`https://ui-avatars.com/api/?name=${data?.user?.name}/?background=0D8ABC&color=fffff`}
+                          />
+                          <AvatarFallback>Anon</AvatarFallback>
+                        </Avatar>
+                        <span className="ml-auto">
+                          {data?.user?.name ?? "Anon"}
+                        </span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuGroup>
+                        <DropdownMenuLabel className="text-gray-400">
+                          Actions
+                        </DropdownMenuLabel>
+                      </DropdownMenuGroup>
+                      <DropdownMenuItem className="cursor-pointer">
+                        <LayoutDashboardIcon />
+                        <span>Dashboard</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer">
+                        <SquareUserIcon />
+                        <span>Account</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer">
+                        <SettingsIcon />
+                        <span>Settings</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer">
+                        <LogOutIcon />
+                        <span role="button" onClick={() => signOut()}>
+                          Logout
+                        </span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </SheetFooter>
             </SheetContent>
           </Sheet>
         </div>
         {/* auth buttons */}
         <div className="hidden lg:flex items-center accent-pink-200">
-          <Button variant={"link"}>Login</Button>
-          <Button>Register</Button>
+          {status === "loading" ? (
+            <Loader2Icon className="animate-spin" />
+          ) : status === "unauthenticated" ? (
+            <>
+              <Button variant={"link"}>Login</Button>
+              <Button>Register</Button>
+            </>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar>
+                  <AvatarImage
+                    src={`https://ui-avatars.com/api/?name=${data?.user?.name}/?background=0D8ABC&color=fffff`}
+                  />
+                  <AvatarFallback>Anon</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="text-gray-400">
+                    Actions
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
+                <DropdownMenuItem className="cursor-pointer">
+                  <LayoutDashboardIcon />
+                  <span>Dashboard</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                  <SquareUserIcon />
+                  <span>Account</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                  <SettingsIcon />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                  <LogOutIcon />
+                  <span role="button" onClick={() => signOut()}>
+                    Logout
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
     </header>
