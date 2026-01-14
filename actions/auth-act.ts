@@ -7,7 +7,6 @@ import { usersTable } from "@/db/schema";
 import * as z from "zod";
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
-import { eq } from "drizzle-orm";
 
 export async function newUser(data: unknown) {
   // sanitize
